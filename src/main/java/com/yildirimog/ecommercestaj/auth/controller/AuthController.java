@@ -7,6 +7,7 @@ import com.yildirimog.ecommercestaj.auth.service.JwtService;
 import com.yildirimog.ecommercestaj.common.enums.Role;
 import com.yildirimog.ecommercestaj.user.entity.User;
 import com.yildirimog.ecommercestaj.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,16 +33,19 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
         // Burada kullanıcı kayıt işlemi yapılır (validasyon, password encode, user kaydetme)
         User user = new User();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);  // default rol
 
+        userRepository.save(user);
         String jwtToken = jwtService.generateToken(user);
 
-        userRepository.save(user);
+
 
         return ResponseEntity.ok(new AuthenticationResponse(
                 jwtToken,
@@ -52,7 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest authRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest authRequest) {
         try {
             // Kullanıcıyı doğrula
             Authentication authentication = authenticationManager.authenticate(

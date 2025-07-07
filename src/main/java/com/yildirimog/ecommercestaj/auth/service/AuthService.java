@@ -6,6 +6,7 @@ import com.yildirimog.ecommercestaj.auth.dto.RegisterRequest;
 import com.yildirimog.ecommercestaj.common.enums.Role;
 import com.yildirimog.ecommercestaj.user.entity.User;
 import com.yildirimog.ecommercestaj.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +20,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    public AuthenticationResponse register(RegisterRequest request){
+    public AuthenticationResponse register(@Valid RegisterRequest request){
         if(userRepository.findByEmail(request.email()).isPresent()){
             throw new IllegalArgumentException("Email already exists");
         }
@@ -32,7 +33,12 @@ public class AuthService {
                 .build();
         userRepository.save(user);
         String jwtToken = jwtService.generateToken(user);
-        return new AuthenticationResponse(jwtToken);
+        return new AuthenticationResponse(
+                jwtToken,
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name()
+        );
     }
     public AuthenticationResponse authenticate(LoginRequest request) {
         // AuthenticationManager ile giriş denetimi
@@ -50,6 +56,9 @@ public class AuthService {
         // Token oluştur
         String token = jwtService.generateToken(user);
 
-        return new AuthenticationResponse(token);
+        return new AuthenticationResponse(token,
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name());
     }
 }
