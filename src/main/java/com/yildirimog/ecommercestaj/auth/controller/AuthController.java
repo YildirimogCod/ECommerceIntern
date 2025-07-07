@@ -33,7 +33,7 @@
         private final PasswordEncoder passwordEncoder;
         private final UserRepository userRepository;
         @PostMapping("/register")
-        public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
+        public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
             // Burada kullanıcı kayıt işlemi yapılır (validasyon, password encode, user kaydetme)
             User user = new User();
             user.setFirstName(request.firstName());
@@ -41,18 +41,8 @@
             user.setEmail(request.email());
             user.setPassword(passwordEncoder.encode(request.password()));
             user.setRole(Role.USER);  // default rol
-
             userRepository.save(user);
-            String jwtToken = jwtService.generateToken(user);
-
-
-
-            return ResponseEntity.ok(new AuthenticationResponse(
-                    jwtToken,
-                    user.getId(),
-                    user.getEmail(),
-                    user.getRole().name()
-            ));
+            return ResponseEntity.ok("Kayıt başarılı. Giriş yapabilirsiniz.");
         }
 
         @PostMapping("/login")
@@ -71,13 +61,10 @@
                 String token = jwtService.generateToken(user);
 
                 // Response gönder
-                return ResponseEntity.ok(new AuthenticationResponse(
-                        token,
-                        user.getId(),
-                        user.getEmail(),
-                        user.getRole().name()
-                ));
-
+                return ResponseEntity.ok(new AuthenticationResponse(token,
+                        user.getId()
+                        ,user.getEmail()
+                        ,user.getRole().name()));
             } catch (BadCredentialsException e) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Geçersiz kullanıcı adı veya şifre");
             }

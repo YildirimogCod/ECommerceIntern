@@ -59,4 +59,10 @@ public class WishlistItemService {
                 .map(wishlistMapper::toResponse)
                 .toList();
     }
+
+    public void deleteWishlistItem(Long id) {
+        WishListItem wishlistItem = wishlistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Wishlist item not found"));
+        wishlistRepository.delete(wishlistItem);
+    }
 }

@@ -32,4 +32,9 @@ public class WishlistItemController {
         List<WishlistItemResponse> wishlist = wishlistItemService.getUserWishlist(userId);
         return ResponseEntity.ok(wishlist);
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteWishlistItem(@PathVariable Long id) {
+        wishlistItemService.deleteWishlistItem(id);
+        return ResponseEntity.noContent().build();
+    }
 }

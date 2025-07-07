@@ -7,6 +7,7 @@ import com.yildirimog.ecommercestaj.product.dto.ProductResponse;
 import com.yildirimog.ecommercestaj.product.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
@@ -24,4 +25,5 @@ public interface ProductMapper {
     default Category mapFirstCategory(Set<Category> categories) {
         return categories.stream().findFirst().orElse(null);
     }
+    void updateEntityFromDto(ProductCreateRequest dto, @MappingTarget Product product);
 }
