@@ -39,6 +39,7 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product")
     private List<WishListItem> wishlistedBy = new ArrayList<>();
 
-
+    @Version
+    private Long version;
 
 }

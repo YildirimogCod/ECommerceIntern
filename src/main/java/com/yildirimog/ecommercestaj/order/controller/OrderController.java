@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +20,10 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
-            @Valid @RequestBody OrderRequest request) {
-        OrderResponse response = orderService.create(request);
+            @Valid @RequestBody OrderRequest request,
+                    @RequestHeader("Idempotency-Key") String idempotencyKey
+    ) {
+        OrderResponse response = orderService.create(request,idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

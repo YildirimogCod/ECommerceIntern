@@ -1,6 +1,7 @@
 package com.yildirimog.ecommercestaj.order.service;
 
 import com.yildirimog.ecommercestaj.common.enums.OrderStatus;
+import com.yildirimog.ecommercestaj.idempotency.service.IdempotencyService;
 import com.yildirimog.ecommercestaj.order.dto.OrderRequest;
 import com.yildirimog.ecommercestaj.order.dto.OrderResponse;
 import com.yildirimog.ecommercestaj.order.entity.Order;
@@ -11,7 +12,11 @@ import com.yildirimog.ecommercestaj.product.repository.ProductRepository;
 import com.yildirimog.ecommercestaj.user.entity.User;
 import com.yildirimog.ecommercestaj.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -24,8 +29,23 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final IdempotencyService idempotencyService;
 
-    public OrderResponse create(@RequestBody OrderRequest request){
+    @Transactional
+    @Retryable(
+            value = {ObjectOptimisticLockingFailureException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000)
+    )
+    public OrderResponse create(OrderRequest request,String idempotencyKey){
+        Optional<OrderResponse> cached = idempotencyService.checkAndGet(
+                idempotencyKey,
+                request.userId(),
+                OrderResponse.class
+        );
+        if (cached.isPresent()) {
+            return cached.get();
+        }
        User user = userRepository.findById(request.userId())
                .orElseThrow(()->new RuntimeException("User not found with id: "));
        List<Long> productIds =  request.orderItems().stream()
@@ -35,14 +55,30 @@ public class OrderService {
          if(products.size() != productIds.size()){
               throw new RuntimeException("Some products not found");
          }
-        Order order = orderMapper.toOrder(request, user, products);
+        for (Product product:products){
+            int requestedQuantity = request.orderItems().stream()
+                    .filter(orderItemRequest -> orderItemRequest.productId().equals(product.getId()))
+                    .findFirst()
+                    .map(orderItemRequest -> orderItemRequest.quantity())
+                    .orElse(0);
+            if(product.getStockQuantity()< requestedQuantity){
+                throw new RuntimeException("Product " + product.getName() + " is out of stock");
+            }
+            // Reduce stock quantity
+            product.setStockQuantity(product.getStockQuantity() - requestedQuantity);
+        }
+          Order order = orderMapper.toOrder(request, user, products);
           Order savedOrder = orderRepository.save(order);
+
+          idempotencyService.save(idempotencyKey,user.getId(),orderMapper.toOrderResponse(savedOrder)
+          );
+        System.out.println("Order created with id: " + savedOrder.getId());
          return orderMapper.toOrderResponse(savedOrder);
    }
    public OrderResponse getOrder(Long id){
         Optional<Order> order = orderRepository.findById(id);
         if(order.isEmpty()){
-            throw new RuntimeException("Order not found with id: " + id);
+            throw new RuntimeException("Order not found");
         }
         return orderMapper.toOrderResponse(order.get());
    }
@@ -52,6 +88,7 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse)
                 .toList();
    }
+   @Transactional
     public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));

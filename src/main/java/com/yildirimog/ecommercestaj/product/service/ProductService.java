@@ -8,6 +8,7 @@ import com.yildirimog.ecommercestaj.product.dto.ProductResponse;
 import com.yildirimog.ecommercestaj.product.entity.Product;
 import com.yildirimog.ecommercestaj.product.mapper.ProductMapper;
 import com.yildirimog.ecommercestaj.product.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -55,13 +56,11 @@ public class ProductService {
     }
     public ProductResponse updateProduct(Long id, ProductCreateRequest dto) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ürün bulunamadı"));
+                .orElseThrow(() -> new EntityNotFoundException("Ürün bulunamadı"));
 
         productMapper.updateEntityFromDto(dto, product);
-
-        // Kategori set et (tek kategori)
         Category category = categoryRepository.findById(dto.categoryId())
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı"));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı"));
 
         product.setCategories(Set.of(category));
 

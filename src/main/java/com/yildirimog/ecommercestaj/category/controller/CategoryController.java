@@ -22,7 +22,6 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(categoryService.createCategory(request));
@@ -39,9 +38,8 @@ public class CategoryController {
         return ResponseEntity.ok(categoryResponse);
     }
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryResponse> updateCategory(@Valid @PathVariable Long id,
-                                                           @RequestBody CategoryCreateRequest request){
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
+                                                           @Valid @RequestBody CategoryCreateRequest request){
 
      CategoryResponse response = categoryService.updateCategory(id,request);
      return ResponseEntity.ok(response);

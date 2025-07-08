@@ -35,7 +35,6 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
     }
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductCreateRequest request) {
@@ -43,7 +42,6 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

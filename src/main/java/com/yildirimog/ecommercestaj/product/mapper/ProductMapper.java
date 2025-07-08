@@ -13,17 +13,17 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = {CategoryMapper.class})
-public interface ProductMapper {
-    @Mapping(target = "categories", ignore = true)
-    Product toEntity(ProductCreateRequest dto);
+    @Mapper(componentModel = "spring", uses = {CategoryMapper.class})
+    public interface ProductMapper {
+        @Mapping(target = "categories", ignore = true)
+        Product toEntity(ProductCreateRequest dto);
 
-    @Mapping(target = "category", source = "categories", qualifiedByName = "mapFirstCategory")
-    ProductResponse toResponse(Product product);
+        @Mapping(target = "category", source = "categories", qualifiedByName = "mapFirstCategory")
+        ProductResponse toResponse(Product product);
 
-    @Named("mapFirstCategory")
-    default Category mapFirstCategory(Set<Category> categories) {
-        return categories.stream().findFirst().orElse(null);
+        @Named("mapFirstCategory")
+        default Category mapFirstCategory(Set<Category> categories) {
+            return categories.stream().findFirst().orElse(null);
+        }
+        void updateEntityFromDto(ProductCreateRequest dto, @MappingTarget Product product);
     }
-    void updateEntityFromDto(ProductCreateRequest dto, @MappingTarget Product product);
-}
