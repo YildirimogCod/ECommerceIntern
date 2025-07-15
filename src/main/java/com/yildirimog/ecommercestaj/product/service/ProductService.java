@@ -5,12 +5,14 @@ import com.yildirimog.ecommercestaj.category.entity.Category;
 import com.yildirimog.ecommercestaj.category.repository.CategoryRepository;
 import com.yildirimog.ecommercestaj.product.dto.ProductCreateRequest;
 import com.yildirimog.ecommercestaj.product.dto.ProductResponse;
+import com.yildirimog.ecommercestaj.product.dto.ProductUpdateRequest;
 import com.yildirimog.ecommercestaj.product.entity.Product;
 import com.yildirimog.ecommercestaj.product.mapper.ProductMapper;
 import com.yildirimog.ecommercestaj.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +25,7 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final CategoryRepository categoryRepository;
 
+    @Transactional
     public ProductResponse createProduct(ProductCreateRequest dto) {
         Product product = productMapper.toEntity(dto);
 
@@ -54,13 +57,15 @@ public class ProductService {
                 .map(productMapper::toResponse)
                 .toList();
     }
-    public ProductResponse updateProduct(Long id, ProductCreateRequest dto) {
+
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductUpdateRequest dto) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ürün bulunamadı"));
 
         productMapper.updateEntityFromDto(dto, product);
         Category category = categoryRepository.findById(dto.categoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı"));
+                        .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı"));
 
         product.setCategories(Set.of(category));
 

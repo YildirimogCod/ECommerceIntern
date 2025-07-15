@@ -15,8 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -100,5 +102,18 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         Order updated = orderRepository.save(order);
         return orderMapper.toOrderResponse(updated);
+    }
+
+    @GetMapping("/orders/history")
+    public List<OrderResponse> getOrderHistory(Authentication auth) {
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        List<Order> orders = orderRepository.findByUserAndStatusIn(
+                user,
+                List.of(OrderStatus.PAID)
+        );
+        return orderMapper.toResponseList(orders);
     }
 }

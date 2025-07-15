@@ -71,4 +71,10 @@ public class OrderMapper {
 
         return order;
     }
+
+    public List<OrderResponse> toResponseList(List<Order> orders) {
+        return orders.stream()
+                .map(this::toOrderResponse)
+                .toList();
+    }
 }

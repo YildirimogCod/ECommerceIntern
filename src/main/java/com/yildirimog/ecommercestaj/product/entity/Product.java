@@ -40,6 +40,7 @@ public class Product extends BaseEntity {
     private List<WishListItem> wishlistedBy = new ArrayList<>();
 
     @Version
+    @Setter(AccessLevel.NONE)
     private Long version;
 
 }

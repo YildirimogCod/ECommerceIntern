@@ -2,6 +2,7 @@ package com.yildirimog.ecommercestaj.product.controller;
 
 import com.yildirimog.ecommercestaj.product.dto.ProductCreateRequest;
 import com.yildirimog.ecommercestaj.product.dto.ProductResponse;
+import com.yildirimog.ecommercestaj.product.dto.ProductUpdateRequest;
 import com.yildirimog.ecommercestaj.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
-            @Valid @RequestBody ProductCreateRequest request) {
+            @Valid @RequestBody ProductUpdateRequest request) {
         ProductResponse response = productService.updateProduct(id, request);
         return ResponseEntity.ok(response);
     }
