@@ -11,6 +11,8 @@ import com.yildirimog.ecommercestaj.product.mapper.ProductMapper;
 import com.yildirimog.ecommercestaj.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +40,10 @@ public class ProductService {
         Product saved = productRepository.save(product);
         return productMapper.toResponse(saved);
     }
-    public List<ProductResponse> getAllProducts(){
-        List<Product> products = productRepository.findAll();
-        return products.stream()
-                .map(productMapper::toResponse)
-                .toList();
+    public Page<ProductResponse> getAllProducts(Pageable pageable){
+
+        Page<Product> products = productRepository.findAll(pageable);
+        return products.map(productMapper::toResponse);
     }
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)

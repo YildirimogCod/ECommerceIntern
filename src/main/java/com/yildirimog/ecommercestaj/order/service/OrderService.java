@@ -74,7 +74,6 @@ public class OrderService {
 
           idempotencyService.save(idempotencyKey,user.getId(),orderMapper.toOrderResponse(savedOrder)
           );
-        System.out.println("Order created with id: " + savedOrder.getId());
          return orderMapper.toOrderResponse(savedOrder);
    }
    public OrderResponse getOrder(Long id){
