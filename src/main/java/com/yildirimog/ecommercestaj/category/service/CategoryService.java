@@ -48,7 +48,8 @@ public class CategoryService {
         if (categoryRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
             throw new BusinessException("Bu isimde bir kategori zaten mevcut.");
         }
-        categoryRepository.save(category);
+
+        categoryRepository.saveAndFlush(category);
         return categoryMapper.toResponse(category);
     }
     public void deleteCategory(Long id) {

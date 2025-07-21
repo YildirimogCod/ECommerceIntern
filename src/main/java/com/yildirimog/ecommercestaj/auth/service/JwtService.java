@@ -19,22 +19,25 @@ import java.util.Map;
 @Service
 @Slf4j
 public class JwtService {
-    @Value("${jwt.secret}")
-    private String secret;
+    //@Value("${jwt.secret}")
+    //private String secret;
     @Value("${jwt.expirationInMillis}")
     private long jwtExpirationInMillis;
-    private SecretKey signingKey;
+    private final SecretKey signingKey;
 
-    @PostConstruct
-    public void init() {
+    //@PostConstruct
+   // public void init() {
         // Neden: Eğer secret base64 encode edilmişse decode edilerek kullanılır. Aksi durumda hata alınır.
         // Eğer base64 değilse alternatif olarak getBytes(StandardCharsets.UTF_8) kullanılmalı.
-        try {
-            signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-        } catch (IllegalArgumentException e) {
-            log.error("JWT Secret key decoding failed. Ensure it is base64-encoded.", e);
-            throw new RuntimeException("Invalid JWT secret key", e);
-        }
+     //   try {
+      //      signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+       // } catch (IllegalArgumentException e) {
+        //    log.error("JWT Secret key decoding failed. Ensure it is base64-encoded.", e);
+         //   throw new RuntimeException("Invalid JWT secret key", e);
+        //}
+    //}
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
     public String generateToken(User user) {
         Instant now = Instant.now();

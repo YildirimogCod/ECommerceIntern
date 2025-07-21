@@ -57,12 +57,16 @@ public class ProductController {
     public ResponseEntity<?> getProductsByCategory(@PathVariable Long categoryId) {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductResponse> updateProduct(
-            @PathVariable Long id,
+    @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateProduct(@PathVariable Long id,
             @Valid @RequestBody ProductUpdateRequest request) {
-        ProductResponse response = productService.updateProduct(id, request);
-        return ResponseEntity.ok(response);
+        try {
+            productService.updateProduct(id, request);
+            return ResponseEntity.noContent().build(); // Return 204 No Content on success
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Return 500 Internal Server Error on failure
+        }
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
